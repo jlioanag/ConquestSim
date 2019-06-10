@@ -6,8 +6,13 @@ import numpy as np
 class Empire:
     def __init__(self, empire_ID):
         self.empire_ID = empire_ID
-        self.empire_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        self.empire_color_R = random.randint(0, 255)
+        self.empire_color_G = random.randint(0, 255)
+        self.empire_color_B = random.randint(0, 255)
+
         self.town_list = []
+
+        print(self.empire_color_R, self.empire_color_G, self.empire_color_B)
 
 
 class Tile:
@@ -34,7 +39,7 @@ class Water(Tile):
 
 
 class Town(Tile):
-    def __init__(self, color):
+    def __init__(self, r, g, b):
         self.BASE_STRENGTH_MIN = 5
         self.BASE_STRENGTH_MAX = 10
 
@@ -48,13 +53,9 @@ class Town(Tile):
         self.health = self.BASE_HEALTH
         self.plague = False
 
-        self.set_color(color)
-
         super().__init__()
         self.tile_ID = 2
-
-    def set_color(self, color):
-        self.color = color
+        self.set_color(r, g, b)
 
 
 class Map:
@@ -67,18 +68,15 @@ class Map:
         self.SPREAD_AMOUNT = 15
 
         self.empire_count = 0
-        self.empire_list = []*empire_amount
-        print(len(self.empire_list))
+        self.empire_list = []
 
         for i in range(empire_amount):
             self.generate_empire(i)
+        print(self.empire_list)
 
         # set tilemap
         self.tilemap = [[Land() for i in range(self.MAPW)] for j in range(self.MAPH)]
-        '''
-        self.tilemap = np.empty(shape=(self.MAPH, self.MAPW))
-        self.tilemap.fill(Land())
-        '''
+
         print(self.tilemap)
         print(len(self.tilemap), "x", len(self.tilemap[0]))
 
@@ -118,8 +116,12 @@ class Map:
         for empire in self.empire_list:
             r = random.randint(1, self.MAPH - 1)
             c = random.randint(1, self.MAPW - 1)
-            if self.tilemap[r][c].tile_ID == Land().tile_ID:
-                self.tilemap[r][c] = Town(empire.empire_color)
+
+            while self.tilemap[r][c].tile_ID != Land().tile_ID:
+                r = random.randint(1, self.MAPH - 1)
+                c = random.randint(1, self.MAPW - 1)
+            self.tilemap[r][c] = Town(empire.empire_color_R, empire.empire_color_G, empire.empire_color_B)
+            print(r, c)
 
     def update_map(self):
         for row in range(self.MAPH):
@@ -128,3 +130,7 @@ class Map:
                                  (col * self.TILESIZE, row * self.TILESIZE, self.TILESIZE, self.TILESIZE))
 
         pygame.display.update()
+
+    def cycle(self):
+        for r in range(0, self.MAPH - 1):
+            for c in range(0, self.MAPW - 1):
